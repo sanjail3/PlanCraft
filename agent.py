@@ -11,7 +11,7 @@ from data import data
 import json
 from utils import clean_paranthesis
 def generate_plan(prompt,model_name):
-    chain = prompt|ChatBedrock(model_id=model_name)
+    chain = prompt| ChatBedrock(model_id=model_name)
     return chain.invoke({}).content
 load_dotenv()
 
