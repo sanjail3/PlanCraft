@@ -5,7 +5,7 @@ import requests
 import os
 from dotenv import load_dotenv
 import time
-
+import base64
 load_dotenv() 
 
 
@@ -46,9 +46,15 @@ class CreateImage3DArgsSchema(BaseModel):
 # ================== CORE FUNCTIONS ================== #
 def create_image_to_3d_task(**kwargs) -> str:
     """Create a new Image-to-3D conversion task with retries"""
+    image_url = kwargs.get("image_url") #local image path
+    if not image_url:
+        raise ValueError("Image URL is required")
+    with open(image_url, "rb") as img_file:
+        imgbase64 = base64.b64encode(img_file.read()).decode("utf-8")
+
     headers = {"Authorization": f"Bearer {os.getenv('MESHY_API_KEY')}"}
     payload = {k: v for k, v in kwargs.items() if v is not None}
-    
+    payload["image_url"] =f"data:image/jpeg;base64,{imgbase64}"
     for attempt in range(3):  # Reduced retries
         try:
             response = requests.post(
@@ -71,6 +77,7 @@ def create_image_to_3d_task(**kwargs) -> str:
     raise Exception("Failed after 3 retries")
 
 def create_and_retrieve_3d_model(**kwargs) -> dict:
+
     """Combined tool with safer polling"""
     task_id = create_image_to_3d_task(**kwargs)
 
@@ -96,26 +103,42 @@ def create_and_retrieve_3d_model(**kwargs) -> dict:
             
             if task_data["status"] == "SUCCEEDED":
                 return {
-                    "model_urls": task_data["model_urls"],
-                    "thumbnail": task_data["thumbnail_url"],
-                    "textures": task_data.get("texture_urls", [])
+                    "observation": "3D model created successfully",
+                    "metadata": {
+                        "model_urls": task_data["model_urls"],
+                        "thumbnail": task_data["thumbnail_url"],
+                        "textures": task_data.get("texture_urls", []),
+                        "error": False
+                    }
+                    
                 }
             elif task_data["status"] in ["FAILED", "CANCELLED"]:
-                raise Exception(f"Task failed: {task_data.get('task_error', 'Unknown error')}")
+                return {
+                    "observation": "3D model creation failed",
+                    "metadata": {
+                        "error": True
+                    }
+                }
+
                 
         except requests.exceptions.RequestException as e:
             print(f"Attempt {attempt+1} failed: {str(e)}")
             
-    raise TimeoutError("Processing timeout after 5 attempts")
+    return {
+        "observation": "3D model creation failed",
+        "metadata": {
+            "error": True
+        }
+    }
 
 
-def get_image_to_3d_tool() -> StructuredTool:
-    return StructuredTool(
-        name="image_to_3d_task_lister",
-        description="Retrieves paginated list of Image-to-3D conversion tasks with sorting capabilities",
-        args_schema=Image3DArgsSchema,
-        func=get_image_to_3d_tasks
-    )
+# def get_image_to_3d_tool() -> StructuredTool:
+#     return StructuredTool(
+#         name="image_to_3d_task_lister",
+#         description="Retrieves paginated list of Image-to-3D conversion tasks with sorting capabilities",
+#         args_schema=Image3DArgsSchema,
+#         func=get_image_to_3d_tasks
+#     )
 
 
 def image_to_3d_creator_tool() -> StructuredTool:
