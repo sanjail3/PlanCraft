@@ -85,5 +85,5 @@ def get_geo_loc_info_tool(input:DisasterDevelopmentInput) -> StructuredTool:
         func=development_tool,
         name="disaster_development_tool",
         description="Generates a comprehensive report on recent disasters and government developments in a specified location.",
-        args_schema=DisasterDevelopmentInput
+        args_schema=DisasterDevelopmentInput # type: ignore
     )
