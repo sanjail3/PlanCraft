@@ -3,7 +3,66 @@ from agent import PlanAgent
 from typing import Dict, Any
 from PIL import Image
 from io import BytesIO
-import time
+import os
+from langchain_openai import AzureChatOpenAI
+import base64
+from langchain_core.messages import HumanMessage
+from langchain.chat_models import ChatOpenAI
+from langchain.prompts import ChatPromptTemplate
+
+system_prompt = """You are a viewer agent assigned to extract and format all information from images provided by a constructing planning agent. Strictly follow these guidelines:
+
+Infographics (Charts, Figures, Graphs):
+
+    Extract all data and present it in a clear table format.
+    If specific values are missing, indicate ranges without estimating based on visual proportions. 
+Tables:
+
+    Recreate the content in an exact table format.
+Flow Diagrams:
+
+    Break down and present the process in step-by-step sequence flow.
+    Avoid adding extra information to the steps.
+Logos or Icons:
+    Provide a concise description in 3 to 5 words only.
+Random Images (e.g., crowds, people):
+
+Extract no content; return an empty string.
+ """
+
+def get_image_data(image)->str:
+
+    llm =  AzureChatOpenAI(
+            azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
+            api_key=os.getenv("AZURE_OPENAI_API_KEY",),
+            azure_deployment=os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME"),
+            api_version=os.getenv("OPENAI_API_VERSION", "2024-08-01-preview")
+        )
+    base64_data = base64.b64encode(image.getvalue()).decode("utf-8")
+
+    human_message = HumanMessage(
+        content=[
+            {
+                "type": "image_url",
+                "image_url": {"url": f"data:image/jpeg;base64,{base64_data}"},
+            },
+        ]
+    )
+
+    prompt = ChatPromptTemplate.from_messages(
+        [
+            (
+                "system",
+                system_prompt,
+            ),
+            human_message,
+        ],
+    )
+
+    chain = prompt | llm
+
+    response = chain.invoke({})
+    return response.content
 
 def render_message_content(message: Dict[str, Any]) -> None:
     """Render different types of message content with appropriate formatting."""
@@ -64,13 +123,29 @@ def main():
         with st.chat_message(message["role"]):
             render_message_content(message)
 
-    # Handle user input
+    # File upload handler
+    uploaded_file = st.file_uploader("Upload a house plan image (JPEG, JPG, PNG)", type=["jpeg", "jpg", "png"])
+    if uploaded_file is not None:
+        
+        image = Image.open(uploaded_file)
+        st.image(image, caption="Uploaded House Plan", width=300)
+        
+        picture_description = get_image_data(uploaded_file)
+        st.session_state.messages.append({
+            "role": "user",
+            "content": "Uploaded an image.",
+            "metadata": {"images": [uploaded_file]}
+        })
+    else:
+        picture_description = ""
+
     if prompt := st.chat_input("Describe your dream house..."):
         st.session_state.processing = True
-        st.session_state.messages.append({"role": "user", "content": prompt})
+        combined_prompt = f"{prompt}\n\n{picture_description}"
+        st.session_state.messages.append({"role": "user", "content": combined_prompt})
         
         with st.chat_message("user"):
-            st.markdown(prompt)
+            st.markdown(combined_prompt)
 
         with st.chat_message("ai"):
             progress_bar = st.progress(0)
@@ -79,7 +154,7 @@ def main():
             final_response = []
 
             try:
-                agent = PlanAgent(prompt)
+                agent = PlanAgent(combined_prompt)
                 agent.prepare_agent()
                 
                 for event in agent.run_agent():
