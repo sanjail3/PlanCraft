@@ -9,19 +9,13 @@ from pydantic.v1 import BaseModel,Field
 from langchain.tools.base import StructuredTool
 load_dotenv()
 import streamlit as st
-st.session_state.llm = AzureChatOpenAI(
-            azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
-            api_key=os.getenv("AZURE_OPENAI_API_KEY"),
-            azure_deployment=os.getenv("AZURE_DEPLOYMENT_NAME"),
-            api_version=os.getenv("AZURE_OPENAI_API_VERSION", "2024-02-15-preview")
-        )
 
 class DisasterDevelopmentTool:
     def __init__(self):
         # Initialize Azure OpenAI client
         self.client = AzureChatOpenAI(
             azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
-            api_key=os.getenv("AZURE_OPENAI_API_KEY"),
+            api_key=os.getenv("AZURE_OPENAI_API_KEY"), # type: ignore
             azure_deployment=os.getenv("AZURE_DEPLOYMENT_NAME"),
             api_version=os.getenv("AZURE_OPENAI_API_VERSION", "2024-02-15-preview")
         )
