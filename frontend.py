@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-from budget_calculation import BudgetCalculation
 
 def main():
     st.title('House Construction Budget Planner')
