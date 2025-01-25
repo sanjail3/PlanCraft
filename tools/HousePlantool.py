@@ -14,7 +14,7 @@ def house_plan_generator(
     guidance_scale: Optional[float] = 9.0
 ) -> str:
     try:
-
+        print("Prompt:", prompt)
         client = Client("stabilityai/stable-diffusion")
         result = client.predict(
             prompt=prompt,
@@ -44,14 +44,14 @@ def get_house_plan_tool() -> StructuredTool:
         args_schema=HousePlanInputs
     )
 
-tool = get_house_plan_tool()
-try:
-    result = tool.invoke({
-        "prompt": "Modern two-story house with large windows",
-        "negative_prompt": "traditional elements",
-        "guidance_scale": 10.5
-    })
-    print("Generated images:", result)
-except Exception as e:
-    print("Validation failed:", e)
+# tool = get_house_plan_tool()
+# try:
+#     result = tool.invoke({
+#         "prompt": "Modern two-story house with large windows",
+#         "negative_prompt": "traditional elements",
+#         "guidance_scale": 10.5
+#     })
+#     print("Generated images:", result)
+# except Exception as e:
+#     print("Validation failed:", e)
 
