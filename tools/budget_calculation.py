@@ -40,7 +40,7 @@ class BudgetCalculation:
 
     def calculate_budget_estimates(self, **budget_input):
         try:
-            # print(self.client.invoke("hi"))
+            print(self.client.invoke("hi"))
             prompt = ChatPromptTemplate.from_messages([
                 ("system", self.budget_cal_prompt()),
                 ("human", "Details provide by user for house data:{input}")
@@ -48,7 +48,7 @@ class BudgetCalculation:
             chain = prompt | self.client | StrOutputParser()
             response = chain.invoke({"input": clean_paranthesis(str(budget_input))})
             return {
-                "observation": None,
+                "observation": response,
                 "metadata": {
                     "error": False,
                     "message": response

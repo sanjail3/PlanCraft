@@ -149,5 +149,5 @@ def main():
                 progress_bar.empty()
                 status_text.empty()
 
-if _name_ == "_main_":
+if __name__ == "__main__":
     main()
