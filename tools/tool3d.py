@@ -6,6 +6,7 @@ import os
 from dotenv import load_dotenv
 import time
 import base64
+import json
 load_dotenv() 
 
 
@@ -14,22 +15,7 @@ class CreateImage3DArgsSchema(BaseModel):
         ...,
         description="Public URL or base64 data URI of the input image (jpg/jpeg/png)"
     )
-    ai_model: Optional[str] = Field(
-        default="meshy-4",
-        description="AI model ID (meshy-4 for hard surfaces)"
-    )
-    topology: Optional[str] = Field(
-        default="triangle",
-        description="Mesh topology: 'quad' or 'triangle'"
-    )
-    target_polycount: Optional[int] = Field(
-        default=30000,
-        description="Target polygon count (10k-300k)"
-    )
-    should_remesh: Optional[bool] = Field(
-        default=True,
-        description="Enable remeshing phase"
-    )
+    
     enable_pbr: Optional[bool] = Field(
         default=False,
         description="Generate PBR texture maps"
@@ -47,14 +33,23 @@ class CreateImage3DArgsSchema(BaseModel):
 def create_image_to_3d_task(**kwargs) -> str:
     """Create a new Image-to-3D conversion task with retries"""
     image_url = kwargs.get("image_url") #local image path
+
+    print(kwargs)
     if not image_url:
         raise ValueError("Image URL is required")
     with open(image_url, "rb") as img_file:
         imgbase64 = base64.b64encode(img_file.read()).decode("utf-8")
 
     headers = {"Authorization": f"Bearer {os.getenv('MESHY_API_KEY')}"}
+
+    print(headers)
     payload = {k: v for k, v in kwargs.items() if v is not None}
     payload["image_url"] =f"data:image/jpeg;base64,{imgbase64}"
+    f = open("payload.json", "w")
+    json.dump(payload, f)
+    f.close()
+
+
     for attempt in range(3):  # Reduced retries
         try:
             response = requests.post(
@@ -63,6 +58,8 @@ def create_image_to_3d_task(**kwargs) -> str:
                 json=payload,
                 timeout=10  # Add timeout
             )
+
+            print(response)
             response.raise_for_status()
             return response.json()["result"]
             
@@ -152,7 +149,7 @@ def image_to_3d_creator_tool() -> StructuredTool:
 
 # tool = image_to_3d_creator_tool()
 # result = tool.run({
-#     "image_url": "https://aisaasvalidator.blob.core.windows.net/media-uploads/d5334c16-3846-43c1-b7cc-af14b70933dd.jpg",
+#     "image_url": r"C:\Users\sanjai\Downloads\history-3.png",
 #     "enable_pbr": True
 # })
 
