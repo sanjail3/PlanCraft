@@ -1,7 +1,15 @@
 import streamlit as st
 import pandas as pd
-import numpy as np
+from tools.budget_calculation import get_budget_calculation_tool, BudgetInputs
+from tools.search_tool import get_geo_loc_info_tool
+from langchain.agents import AgentExecutor, initialize_agent
+from langchain_groq import ChatGroq
+from dotenv import load_dotenv
 from tools.budget_calculation import BudgetCalculation
+from tools.search_tool import DisasterDevelopmentTool
+import os 
+
+load_dotenv()
 
 def main():
     st.title('House Construction Budget Planner')
@@ -32,26 +40,32 @@ def main():
 
     quality_type = st.selectbox('Construction Quality', ['Basic', 'Standard', 'Premium', 'Luxury'])
     
-    budgetary_cal_input = {
-        "square_ft": square_ft,
-        "location": location,
-        "estimated_budget": estimated_budget,
-        "demographics": demographics,
-        "no_of_bks": no_of_bks,
-        "stories": stories,
-        "main_road": main_road,
-        "guest_rooms": guest_rooms,
-        "basements": basements,
-        "parking": parking,
-        "quality_type": quality_type
-        }
+    # Create BudgetInputs object
+    budgetary_inputs = {
+        "square_ft":square_ft,
+        "location":location,
+        "estimated_budget":estimated_budget,
+        "demographics":demographics,
+        "no_of_bks":no_of_bks,
+        "stories":stories,
+        "main_road":main_road,
+        "guest_rooms":guest_rooms,
+        "basements":basements,
+        "parking":parking,
+        "quality_type":quality_type
+    }
     
-    # Budget calculation
-    if st.button('Calculate Budget Breakdown'):
-        budgetCalculation = BudgetCalculation()
-        results = budgetCalculation.calculate_budget_estimates(budgetary_cal_input)
-        st.write(results)
+# #Budget calculation
+#     if st.button('Calculate Budget Breakdown'):
+#         budgetCalculation = BudgetCalculation()
+#         results = budgetCalculation.calculate_budget_estimates(budgetary_inputs)
+#         st.write(results)
 
+    # if st.button('Get Geo Location Info'):
+    #     geo_loc = DisasterDevelopmentTool()
+    #     results = geo_loc.generate_comprehensive_report(budgetary_inputs.get('demographics'))
+    #     st.write(results)    
 
 if __name__ == '__main__':
     main()
+    
