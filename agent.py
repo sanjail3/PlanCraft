@@ -87,7 +87,8 @@ class PlanAgent:
         >>>
         * Provide the detailed  budget estimation for the house plan
         <<<
-
+        
+        generate budget first and then house plan and 3d model for the house plan
     
                         """
 
@@ -105,16 +106,6 @@ class PlanAgent:
         filter_steps =[]
         success_found = False
         reverse_steps : MultiToolAgentStep = self.state["raw_intermediate_steps"][::-1]
-        if len(reverse_steps)>0:
-            if any([True for s in reverse_steps[0].tool_results if s.tool_action.tool == "house_plan_generator"]):
-                if data.get("is_plane_approved") == "approved":
-                    pass
-                else:
-                    
-                    for tool_result in reverse_steps[0].tool_results:
-                        if tool_result.tool_action.tool == "house_plan_generator":
-                            tool_result.content["text"] += f'\n\n The generated plan is rejected by the user with feedback : {data.get("message")}'
-                    data["is_plane_generated"] = False
         for step in reverse_steps:
             if all([s.status == "success" for s in step.tool_results]):
                 success_found = True
@@ -159,7 +150,7 @@ class PlanAgent:
                 observation_content = {
                         "text": f'This the path for generated image : {open(image_paths[0]["image"])}',
                     }
-                data["is_plane_generated"] = True
+                
 
             tool_results.append(
                 ToolResult(
