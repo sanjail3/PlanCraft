@@ -72,11 +72,8 @@ class PlanAgent:
                
             ]
         )
-        generated_plan = generate_plan(plan_prompt_template,"anthropic.claude-3-5-sonnet-20240620-v1:0")
-        yield {
-            "event":"plan_generation",
-            "message":generated_plan
-        }
+        self.generated_plan = generate_plan(plan_prompt_template,"anthropic.claude-3-5-sonnet-20240620-v1:0")
+        
     def prepare_intermediate_steps(self):
         filter_steps =[]
         success_found = False
@@ -135,7 +132,10 @@ class PlanAgent:
         return agent_step
     def run_agent(self)->Generator:
         
-
+        yield {
+            "event":"plan_generation",
+            "message":self.generated_plan
+        }
         for _ in range(self.max_steps):
             step_output = self.step_agent()
             if isinstance(step_output,AgentFinish):
