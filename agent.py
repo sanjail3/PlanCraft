@@ -10,7 +10,7 @@ from langchain_aws import ChatBedrock
 
 def generate_plan(prompt,model_name):
     chain = prompt|ChatBedrock(model_id=model_name)
-    return chain.invoke().content
+    return chain.invoke({}).content
 load_dotenv()
 class PlanAgent:
     def __init__(self, question,max_steps=5):
@@ -65,10 +65,12 @@ class PlanAgent:
 
         always uses house_plan_generator tool then 3d_model_generator tool
         Highlight important details"""
+
+        user_prompt_client = f"client requirement:{self.question}"
         plan_prompt_template = ChatPromptTemplate.from_messages(
             [
                 ("system",plan_prompt),
-                ("human",f"client requirement:{self.question}"),
+                ("human",user_prompt_client),
                
             ]
         )
