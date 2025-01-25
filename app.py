@@ -112,6 +112,24 @@ def main():
                                         pass
                                 else:
                                     collected_artifacts["errors"].append("Failed to generate floor plans")
+
+                        elif event["tool"] == "plot_generator":
+                                    with st.popover("Plot Intermediate Info"):
+                                        st.markdown("### Plot Instruction:")
+                                        st.markdown(
+                                            event["tool_input"]["plot_instruction"]
+                                        )
+                                        st.code(event["metadata"].get("plot_gen_code"))
+                                    if not event.get("metadata", {}).get("error"):
+                                        image_data = event["step_response"]["image"][
+                                            "source"
+                                        ]["bytes"]
+                                        st.image(Image.open(BytesIO(image_data)))
+                                        # st.plotly_chart(event["metadata"]["plotly_fig"])
+                                    else:
+                                        st.caption(
+                                            f'```\n{event["step_response"].get("text")}\n```'
+                                        )
                         elif tool_name == "3d_model_generator":
                             status_text.markdown("🛠 *Creating 3D model...*")
                             if not metadata.get("error"):
