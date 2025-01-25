@@ -14,7 +14,7 @@ def house_plan_generator(
     guidance_scale: Optional[float] = 9.0
 ) -> str:
     try:
-        print("Prompt:", prompt)
+        # print("Prompt:", prompt)
         client = Client("stabilityai/stable-diffusion")
         result = client.predict(
             prompt=prompt,

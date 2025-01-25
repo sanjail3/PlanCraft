@@ -33,6 +33,8 @@ class ToolAction(BaseModel):
     tool_id: str
     tool: str
     tool_input: Union[dict, str]
+    def __str__(self):
+        return f"{self.tool}({self.tool_input})"
 
 
 class ToolResult(BaseModel):
@@ -78,6 +80,8 @@ def bedrock_agent_parser(ai_message):
                     tool_input=message["input"],
                 )
             )
+    print(tool_actions)
+
 
     return MultiToolAgentAction(tool_actions=tool_actions, message_log=[ai_message])
 
