@@ -1,6 +1,8 @@
 import streamlit as st
 from agent import PlanAgent
 from typing import Dict, Any
+from PIL import Image
+from io import BytesIO
 import time
 
 def render_message_content(message: Dict[str, Any]) -> None:
