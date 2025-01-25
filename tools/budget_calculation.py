@@ -6,7 +6,8 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain.tools import Tool
 from pydantic import BaseModel
 from langchain.tools.base import StructuredTool
-from pydantic.v1 import BaseModel,Field
+from pydantic.v1 import BaseModel,Field 
+from enum import Enum, IntEnum
 
 class BudgetCalculation:
     def __init__(self):
@@ -15,7 +16,7 @@ class BudgetCalculation:
         
         self.client = AzureChatOpenAI(
             azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
-            api_key=os.getenv("AZURE_OPENAI_API_KEY"),
+            api_key=os.getenv("AZURE_OPENAI_API_KEY"), # type: ignore
             azure_deployment=os.getenv("AZURE_DEPLOYMENT_NAME"),
             api_version=os.getenv("AZURE_OPENAI_API_VERSION", "2024-02-15-preview")
         )
@@ -72,10 +73,47 @@ class BudgetCalculation:
         
         except Exception as e:
             return f"Budget Calculation Error: {str(e)}"
+        
+class location_enum(str, Enum):
+    Urban = "Urban"
+    Suburban = "Suburban"
+    Rural = "Rural"    
 
+class main_road_enum(str, Enum):
+    Yes = "Yes"
+    No = "No"
+    Nearby = "Nearby" 
+
+class guest_room_enum(str, Enum):
+    Yes = "Yes"
+    No = "No"   
+
+class basement_enum(str, Enum):
+    Yes = "Yes"
+    No = "No"
+
+class parking_enum(str, Enum):
+    Yes = "Yes"
+    No = "No"    
+
+class quality_type_enum(str, Enum):
+    Basic = "Basic"
+    Standard = "Standard"
+    Premium = "Premium"
+    Luxury = "Luxury"
 
 class BudgetInputs(BaseModel):
-    project_details: dict = Field(description="Budget Calculation Project Details")
+    square_ft: float = Field(..., description="Total square footage of the project")
+    location: str = Field(location_enum, description="Location of the project")
+    estimated_budget: float = Field(..., description="Estimated budget for the project")
+    demographics: str = Field(..., description="Demographics of the area")
+    no_of_bks: int = Field(..., description="Number of blocks in the project")
+    stories: int = Field(..., description="Number of stories in the project")
+    main_road: str = Field(main_road_enum, description="Is the project located on a main road? (Yes/No)")
+    guest_rooms: int = Field(guest_room_enum, description="Number of guest rooms")
+    basements: int = Field(basement_enum, description="Number of basements in the project")
+    parking: int = Field(parking_enum, description="Number of parking spaces")
+    quality_type: str = Field(quality_type_enum, description="Type of quality (e.g., High, Medium, Low)")
 
 def budget_calculation(project_details: dict,) -> str:
     """Calculate construction budget estimates based on project specifications."""
@@ -87,6 +125,6 @@ def get_budget_calculation_tool(input:BudgetInputs) -> StructuredTool:
         func=budget_calculation,
         name="budget_calculator",
         description="Generates detailed construction budget estimates based on project specifications including materials, costs, timeline, and financial breakdown.",
-        args_schema=BudgetInputs
+        args_schema=BudgetInputs # type: ignore
     )
 
