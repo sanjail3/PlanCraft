@@ -15,9 +15,10 @@ def house_plan_generator(
 ) -> str:
     try:
         # print("Prompt:", prompt)
+        final_prompt="As a BIM engineer, please draw a 3D 1st floor plan design for new 2 BHK building , use not contrasting colors to make it look more appealing , use traditional elements for the each section" +prompt
         client = Client("stabilityai/stable-diffusion")
         result = client.predict(
-            prompt=prompt,
+            prompt=final_prompt,
             negative=negative_prompt,
             scale=guidance_scale,
             api_name="/infer_2"  # Specific endpoint for house plans
@@ -47,7 +48,7 @@ def get_house_plan_tool() -> StructuredTool:
 # tool = get_house_plan_tool()
 # try:
 #     result = tool.invoke({
-#         "prompt": "Modern two-story house with large windows",
+#         "prompt": "As a BIM engineer, please draw a 3D 1st floor plan design for new 2 BHK building , use not contrasting colors to make it look more appealing , use traditional elements for the each section",
 #         "negative_prompt": "traditional elements",
 #         "guidance_scale": 10.5
 #     })

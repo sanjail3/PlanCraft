@@ -2,12 +2,18 @@ import requests
 import time
 import os
 from dotenv import load_dotenv
+from pydantic.v1 import BaseModel, Field
+from langchain.tools import StructuredTool
 
 # Load environment variables from .env file
 load_dotenv()
 API_KEY = os.getenv("MESHY_API_KEY")
 API_URL = "https://api.meshy.ai/openapi/v2/text-to-3d"
-
+class CreateText3DArgsSchema(BaseModel):
+    prompt : str = Field(
+        ...,
+        description="Description of the desired 3D model"
+    )
 def create_preview_task(prompt):
     """
     Create a Text-to-3D preview task.
@@ -68,14 +74,33 @@ def retrieve_task_result(task_id):
             print("Task is processing, checking again in 20 seconds...")
             time.sleep(20)
 
-if __name__ == "__main__":
-    prompt = input("Enter a description for the 3D model: ")
+def generate_3d_model(prompt:str):
     try:
+        
         task_id = create_preview_task(prompt)
-        print(f"Task created successfully. Task ID: {task_id}")
         result = retrieve_task_result(task_id)
-        print("3D model generated successfully!")
-        print("Model URLs:", result["model_urls"])
-        print("Thumbnail URL:", result["thumbnail_url"])
+        return {
+            "observation": "3D model created successfully",
+            "metadata": {
+                "model_urls": result["model_urls"],
+                "thumbnail": result["thumbnail_url"],
+                "error": False
+            }
+        }
     except Exception as e:
-        print("An error occurred:", str(e))
+        return {
+            "observation": f"3D model creation failed: {str(e)}",
+            "metadata": {
+                "error": True
+            }
+        }
+
+def image_to_3d_creator_tool() -> StructuredTool:
+    return StructuredTool(
+        name="3d_model_generator",
+        description="Create 3D models from images and automatically retrieve results",
+        args_schema=CreateText3DArgsSchema,
+        func=generate_3d_model
+    )
+
+

@@ -116,8 +116,8 @@ def main():
         
         with st.container():
             st.subheader("Basic Details")
-            square_ft = st.number_input('Total Square Footage', min_value=500, max_value=10000, 
-                                      value=2000, step=100)
+            square_ft = st.number_input('Total Square Footage', min_value=500, max_value=10000,value=2000, step=100)
+            estimated_budget = st.number_input('Estimated Budget ($)', min_value=50000, max_value=5000000, value=300000,step=1000)
             location = st.selectbox('Location Type', ['Urban', 'Suburban', 'Rural'])
             quality_type = st.selectbox('Construction Quality', ['Basic', 'Standard', 'Premium', 'Luxury'])
             
@@ -147,7 +147,8 @@ def main():
             "parking": parking,
             "main_road": main_road,
             "guest_rooms": guest_rooms,
-            "basements": basements
+            "basements": basements,
+            "estimated_budget": estimated_budget
         }
 
     st.markdown("""
@@ -209,11 +210,11 @@ def main():
 
     if prompt := st.chat_input("Describe your dream house..."):
         st.session_state.processing = True
-        combined_prompt = f"{prompt}\n\n{picture_description}"
+        combined_prompt = f"{prompt}\n\n{picture_description}\n\nHouse description: {str(st.session_state.budgetary_inputs)}"
         st.session_state.messages.append({"role": "user", "content": combined_prompt})
         
-        with st.chat_message("user"):
-            st.markdown(combined_prompt)
+        # with st.chat_message("user"):
+        #     st.markdown(combined_prompt)
 
         with st.chat_message("ai"):
             progress_bar = st.progress(0)
@@ -295,11 +296,15 @@ def main():
                             if not metadata.get("error"):
                                 collected_artifacts["model_urls"] = metadata.get("model_urls", [])
                                 collected_artifacts["thumbnail"] = metadata.get("thumbnail", "")
+                                import requests
+                                print(collected_artifacts["thumbnail"],"thumbnail")
+                                
+
                                 if metadata.get("thumbnail"):
-                                    st.image(f'r{metadata["thumbnail"]}', caption="3D Model Preview", width=300)
+                                    st.image(collected_artifacts["thumbnail"], caption="3D Model Preview", width=300)
                                     pass
-                                for url in metadata.get("model_urls", []):
-                                    st.markdown(f"[Download 3D Model]({url})")
+                                # for url in metadata.get("model_urls", []):
+                                st.markdown(f"[Download 3D Model]({metadata['model_urls']['obj']})")
                             else:
                                 collected_artifacts["errors"].append("Failed to generate 3D model")
                     elif event.get("status") == "success":

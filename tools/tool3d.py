@@ -147,10 +147,10 @@ def image_to_3d_creator_tool() -> StructuredTool:
     )
 
 
-# tool = image_to_3d_creator_tool()
-# result = tool.run({
-#     "image_url": r"C:\Users\sanjai\Downloads\history-3.png",
-#     "enable_pbr": True
-# })
+tool = image_to_3d_creator_tool()
+result = tool.run({
+    "image_url": r"C:\Users\ragut\AppData\Local\Temp\gradio\063bb032e169656860c436b66edd793f26a28f6289bc95a81084a4339ae4605f\e76e5086-3e7b-48ef-a764-669c4bcf6a09.jpg",
+    "enable_pbr": True
+})
 
-# print(result)
+print(result)

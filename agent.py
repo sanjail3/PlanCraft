@@ -1,7 +1,7 @@
 from tools.addition import get_add_tool
 from tools.HousePlantool import get_house_plan_tool
 from tools.budget_calculation import get_budget_calculation_tool
-from tools.tool3d import image_to_3d_creator_tool
+from tools.text_3d import image_to_3d_creator_tool
 from langchain.prompts import ChatPromptTemplate
 from typing import Generator
 from planner import MultiToolAgentStep, BedrockClaudeAgentPlanner, AgentFinish, MultiToolAgentAction,ToolResult
@@ -10,6 +10,7 @@ from langchain_aws import ChatBedrock
 from tools.python_tool import get_python_lc_tool,get_matching_values_tool
 from tools.plot_generator import get_plot_gen_lc_tool
 from data import data
+from loguru import logger
 import json
 from utils import clean_paranthesis
 def generate_plan(prompt,model_name):
@@ -29,7 +30,7 @@ load_dotenv()
         "parking": parking,
         "quality_type": quality_type"""
 class PlanAgent:
-    def __init__(self, data,max_steps=5):
+    def __init__(self, data,max_steps=8):
         self.state = {}
         self.data = data
         self.max_steps = max_steps
