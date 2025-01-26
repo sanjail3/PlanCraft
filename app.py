@@ -109,8 +109,76 @@ def main():
     </style>
     """, unsafe_allow_html=True)
 
-    st.title("🏠 Architect AI Assistant")
-    st.markdown("Transform your architectural visions into detailed plans and 3D models!")
+
+    with st.sidebar:
+        st.title('🏠 Project Parameters')
+        st.markdown("Configure your home specifications")
+        
+        with st.container():
+            st.subheader("Basic Details")
+            square_ft = st.number_input('Total Square Footage', min_value=500, max_value=10000, 
+                                      value=2000, step=100)
+            location = st.selectbox('Location Type', ['Urban', 'Suburban', 'Rural'])
+            quality_type = st.selectbox('Construction Quality', ['Basic', 'Standard', 'Premium', 'Luxury'])
+            
+        with st.container():
+            st.subheader("Layout Details")
+            col1, col2 = st.columns(2)
+            with col1:
+                no_of_bhk = st.number_input('BHK', min_value=1, max_value=10, value=3)
+            with col2:
+                stories = st.number_input('Stories', min_value=1, max_value=10, value=2)
+            
+            parking = st.number_input('Parking Spaces', min_value=0, max_value=5, value=2)
+            
+        with st.container():
+            st.subheader("Additional Features")
+            main_road = st.selectbox('Main Road Access', ['Direct', 'Nearby', 'No'])
+            guest_rooms = st.selectbox('Guest Room', ['Yes', 'No'])
+            basements = st.selectbox('Basement', ['Yes', 'No'])
+
+        # Store in session state
+        st.session_state.budgetary_inputs = {
+            "square_ft": square_ft,
+            "location": location,
+            "quality_type": quality_type,
+            "no_of_bhk": no_of_bhk,
+            "stories": stories,
+            "parking": parking,
+            "main_road": main_road,
+            "guest_rooms": guest_rooms,
+            "basements": basements
+        }
+
+    st.markdown("""
+    <div style='text-align: center; margin-bottom: 3rem;'>
+        <div style='
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 1.5rem;
+            background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
+            border-radius: 16px;
+            transform: rotate(45deg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        '>
+            <span style='transform: rotate(-45deg); font-size: 32px;'>🚀</span>
+        </div>
+        <h1 style='
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(90deg, #8B5CF6 0%, #7C3AED 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        '>
+            Build Your Dream Home
+        </h1>
+        <p style='color: #6B7280; font-size: 1.1rem;'>
+            Let's bring your architectural vision to life with AI-powered planning
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
 
     # Initialize session state
     if "messages" not in st.session_state:
@@ -172,21 +240,36 @@ def main():
                         progress_bar.progress(60)
                         tool_name = event.get("tool")
                         metadata = event.get("metadata", {})
+
+                        if tool_name == "budget_calculator":
+                            status_text.markdown("Defing budget parameters...*")
+                            st.toast("Budget Parameters Defined", icon="⚙")
+                            st.markdown("*Budget Parameters:*")
+                            st.write(metadata.get("message"," "))
                         
                         if tool_name == "house_plan_generator":
                             status_text.markdown("🎨 *Generating floor plans...*")
                             st.toast("Floor Plans Generated", icon="🎨")
                             st.markdown("*Floor Plans:*")
-                            with st.expander(event["tool"],expanded=True):
+                            with st.expander(event["tool"], expanded=True):
                                 if not metadata.get("error"):
                                     collected_artifacts["images"] = metadata.get("image_path", [])
-                                    for img in metadata.get("image_path", []):
-                                        from pathlib import Path
+                                    
+                                    # Create a 2x2 column layout
+                                    image_paths = metadata.get("image_path", [])
+                                    num_images = len(image_paths)
+                                    cols = st.columns(2)  # Create two columns
 
+                                    for i, img in enumerate(image_paths):
+                                        from pathlib import Path
+                                        
                                         # Convert to Path object for better path handling
                                         image_path = Path(img["image"])
-                                        st.image(str(image_path), caption="Generated Floor Plan", width=400)
-                                        pass
+                                        
+                                        # Determine which column to place the image in
+                                        col = cols[i % 2]  # Alternate between the two columns
+                                        with col:
+                                            st.image(str(image_path), caption=f"Generated Floor Plan {i + 1}", width=400)
                                 else:
                                     collected_artifacts["errors"].append("Failed to generate floor plans")
 
