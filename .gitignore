@@ -9,6 +9,7 @@ __pycache__/
 
 own_agent/
 agent_env/
+nira_env/
 
 # Distribution / packaging
 .Python

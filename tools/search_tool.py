@@ -75,10 +75,24 @@ class DisasterDevelopmentTool:
 class DisasterDevelopmentInput(BaseModel):
     geo_loc : str = Field(description="Geographical location to search for recent disasters and government developments")
 
-def development_tool(geo_loc: str,) -> str:
+def development_tool(geo_loc: str,) -> dict:
     """Calculate construction budget estimates based on project specifications."""
-    budget_calculator = DisasterDevelopmentTool()
-    return budget_calculator.generate_comprehensive_report(geo_loc)
+    try:
+        budget_calculator = DisasterDevelopmentTool()
+        result =  budget_calculator.generate_comprehensive_report(geo_loc)
+        return {
+            "observation": result,
+            "metadata": {
+                "error": False
+            }
+        }
+    except Exception as e:
+        return {
+            "observation": f"Error: {str(e)}",
+            "metadata": {
+                "error": True
+            }
+        }
 
 def get_geo_loc_info_tool() -> StructuredTool:
     return StructuredTool.from_function(
