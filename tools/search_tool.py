@@ -80,7 +80,7 @@ def development_tool(geo_loc: str,) -> str:
     budget_calculator = DisasterDevelopmentTool()
     return budget_calculator.generate_comprehensive_report(geo_loc)
 
-def get_geo_loc_info_tool(input:DisasterDevelopmentInput) -> StructuredTool:
+def get_geo_loc_info_tool() -> StructuredTool:
     return StructuredTool.from_function(
         func=development_tool,
         name="disaster_development_tool",
